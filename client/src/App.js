@@ -24,6 +24,7 @@ class App extends Component {
 
     this.loadUser = this.loadUser.bind(this)
     this.logout = this.logout.bind(this)
+    this.login = this.login.bind(this)
   }
 
   componentDidMount() {
@@ -32,7 +33,6 @@ class App extends Component {
 
   loadUser() {
     var currentToken = localStorage.getItem('token')
-    console.log(currentToken)
 
     // headers
     var config = {
@@ -49,7 +49,6 @@ class App extends Component {
     axios.get('http://localhost:3001/api/auth/user', config)
       .then(res => res.data)
       .then(user => {
-        console.log(user)
         this.setState({
           isLoggedIn: true,
           loading: false,
@@ -65,11 +64,20 @@ class App extends Component {
       })
   }
 
+  login(user) {
+    localStorage.setItem('token', user.token)
+    this.setState({ 
+      isLoggedIn: true,
+      loading: false, 
+      currentUser: user
+    })
+  }
+
   logout() {
     localStorage.removeItem('token')
     this.setState({
       isLoggedIn: false,
-      loading: true,
+      loading: false,
       currentUser: null
     })
   }
@@ -81,7 +89,15 @@ class App extends Component {
         { !loading ? 
           <Router>
             <Switch>
-              <Route path='/login' component={LoginPage} />
+              {/* <Route path='/login'>
+                <LoginPage login={this.login} />
+              </Route> */}
+              <Route path='/login' render={props => (
+                  isLoggedIn
+                  ? <Redirect to='/' />
+                  : <LoginPage login={this.login} />
+                )} 
+              />
               <PrivateRoute path='/' isLoggedIn={isLoggedIn} user={currentUser} logout={this.logout} component={ProtectedPage} />
             </Switch>
         </Router> 
@@ -93,6 +109,7 @@ class App extends Component {
 }
 
 function PrivateRoute({ component: Component, ...rest }) {
+  console.log(rest)
   return (
     <Route {...rest} render={props => (
       rest.isLoggedIn 

@@ -1,6 +1,7 @@
 import React from 'react'
 
 function ProtectedPage(props) {
+  console.log(props.user)
   return (
     <div>
       welcome {props.user.username}

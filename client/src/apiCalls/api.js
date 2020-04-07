@@ -15,9 +15,5 @@ export async function login(username, password) {
   })
 
   return axios.post('http://localhost:3001/api/auth/', body, config)
-    .then(res => res.data)
-    .then(user => {
-      console.log(user)
-      localStorage.setItem('token', user.token)
-    })
+    .then(res => res.data.user)
 }
