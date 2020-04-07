@@ -1,9 +1,10 @@
 import React from 'react'
 
-function ProtectedPage() {
+function ProtectedPage(props) {
   return (
     <div>
-      this is the protected page
+      welcome {props.user.username}
+      <button onClick={props.logout}>Logout</button>
     </div>
   )
 }

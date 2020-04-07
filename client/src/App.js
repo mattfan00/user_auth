@@ -18,19 +18,21 @@ class App extends Component {
 
     this.state = {
       isLoggedIn: false,
-      loading: true
+      loading: true,
+      currentUser: null
     }
 
-    this.getToken = this.getToken.bind(this)
+    this.loadUser = this.loadUser.bind(this)
+    this.logout = this.logout.bind(this)
   }
 
   componentDidMount() {
-    this.getToken()
-    
+    this.loadUser()
   }
 
-  getToken() {
+  loadUser() {
     var currentToken = localStorage.getItem('token')
+    console.log(currentToken)
 
     // headers
     var config = {
@@ -44,25 +46,43 @@ class App extends Component {
       config.headers['x-auth-token'] = currentToken
     }
 
-    axios.get('http://localhost:3001/api/auth/user')
-      .then(res => {
-        console.log(res.data)
+    axios.get('http://localhost:3001/api/auth/user', config)
+      .then(res => res.data)
+      .then(user => {
+        console.log(user)
         this.setState({
-          isLoggedIn: res.data.token,
+          isLoggedIn: true,
+          loading: false,
+          currentUser: user
+        })
+      })
+      .catch(err => {
+        console.log(err.response.status, err.response.data)
+        this.setState({
+          isLoggedIn: false,
           loading: false
         })
       })
   }
 
+  logout() {
+    localStorage.removeItem('token')
+    this.setState({
+      isLoggedIn: false,
+      loading: true,
+      currentUser: null
+    })
+  }
+
   render() {
-    const { loading, isLoggedIn } = this.state
+    const { loading, isLoggedIn, currentUser } = this.state
     return ( 
       <div>
         { !loading ? 
           <Router>
             <Switch>
               <Route path='/login' component={LoginPage} />
-              <PrivateRoute path='/' isLoggedIn={isLoggedIn} component={ProtectedPage} />
+              <PrivateRoute path='/' isLoggedIn={isLoggedIn} user={currentUser} logout={this.logout} component={ProtectedPage} />
             </Switch>
         </Router> 
           : '' }
@@ -76,7 +96,7 @@ function PrivateRoute({ component: Component, ...rest }) {
   return (
     <Route {...rest} render={props => (
       rest.isLoggedIn 
-        ? <Component {...props} />
+        ? <Component {...props} user={rest.user} logout={rest.logout} />
         : <Redirect to='/login' />
       )}
     />

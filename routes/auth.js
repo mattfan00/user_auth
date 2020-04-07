@@ -12,17 +12,17 @@ router.post('/', (req, res) => {
   const { username, password } = req.body
 
   if(!username || !password) {
-    return res.status(400).json({message: "Please enter all fields"})
+    return res.json({message: "Please enter all fields"})
   }
 
   User.findOne({username: username})
     .then(user => {
-      if(!user) return res.status(400).json({message: 'User does not exist'})
+      if(!user) return res.json({message: 'User does not exist'})
 
       // Validate password
       bcrypt.compare(password, user.password)
         .then(isMatch => {
-          if(!isMatch) return res.status(400).json({message: "Invalid credentials"})
+          if(!isMatch) return res.json({message: "Invalid credentials"})
 
           jwt.sign({id: user._id}, config.get('jwtSecret'), (err, token) => {
             if(err) throw err
