@@ -24,7 +24,7 @@ class App extends Component {
 
     this.loadUser = this.loadUser.bind(this)
     this.logout = this.logout.bind(this)
-    this.login = this.login.bind(this)
+    this.signIn = this.signIn.bind(this)
   }
 
   componentDidMount() {
@@ -64,7 +64,7 @@ class App extends Component {
       })
   }
 
-  login(result) {
+  signIn(result) {
     localStorage.setItem('token', result.token)
     console.log(result.user)
     this.setState({ 
@@ -96,7 +96,7 @@ class App extends Component {
               <Route path='/login' render={props => (
                   isLoggedIn
                   ? <Redirect to='/' />
-                  : <LoginPage login={this.login} />
+                  : <LoginPage signIn={this.signIn} />
                 )} 
               />
               <PrivateRoute path='/' isLoggedIn={isLoggedIn} user={currentUser} logout={this.logout} component={ProtectedPage} />

@@ -1,53 +1,99 @@
 import React, { Component } from 'react'
-import { login } from './apiCalls/api'
+import { login, register } from './apiCalls/api'
 
 class LoginPage extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      username: '',
-      password: ''
+      loginUsername: '',
+      loginPassword: '',
+      regUsername: '',
+      regPassword: ''
     }
 
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.handleUsername = this.handleUsername.bind(this)
-    this.handlePassword = this.handlePassword.bind(this)
+    this.handleLogin = this.handleLogin.bind(this)
+    this.handleLoginUsername = this.handleLoginUsername.bind(this)
+    this.handleLoginPassword = this.handleLoginPassword.bind(this)
+
+    this.handleReg = this.handleReg.bind(this)
+    this.handleRegUsername = this.handleRegUsername.bind(this)
+    this.handleRegPassword = this.handleRegPassword.bind(this)
   }
 
   
 
-  async handleSubmit(e) {
+  async handleLogin(e) {
     e.preventDefault()
 
-    let result = await login(this.state.username, this.state.password)
+    let result = await login(this.state.loginUsername, this.state.loginPassword)
     this.setState({
-      username: '',
-      password: ''
+      loginUsername: '',
+      loginPassword: '',
+      regUsername: '',
+      regPassword: ''
     })
-    this.props.login(result)
+    this.props.signIn(result)
   }
 
-  handleUsername(e) {
-    const username = e.target.value
-    this.setState({ username })
+  handleLoginUsername(e) {
+    const loginUsername = e.target.value
+    this.setState({ loginUsername })
   }
 
-  handlePassword(e) {
-    const password = e.target.value
-    this.setState({ password })
+  handleLoginPassword(e) {
+    const loginPassword = e.target.value
+    this.setState({ loginPassword })
+  }
+
+
+  async handleReg(e) {
+    e.preventDefault()
+
+    let result = await register(this.state.regUsername, this.state.regPassword)
+    this.setState({
+      loginUsername: '',
+      loginPassword: '',
+      regUsername: '',
+      regPassword: ''
+    })
+    this.props.signIn(result)
+  }
+
+  handleRegUsername(e) {
+    const regUsername = e.target.value
+    this.setState({ regUsername })
+  }
+
+  handleRegPassword(e) {
+    const regPassword = e.target.value
+    this.setState({ regPassword })
   }
 
 
 
   render() {
-    const { username, password } = this.state
+    const { loginUsername, loginPassword, regUsername, regPassword } = this.state
     return (
-      <form onSubmit={this.handleSubmit}>
-        <input value={username} onChange={this.handleUsername}></input>
-        <input value={password} type="password" onChange={this.handlePassword}></input>
-        <button>Submit</button> 
-      </form>
+      <div>
+        <div>
+          <h3>Login</h3>
+          <form onSubmit={this.handleLogin}>
+            <input value={loginUsername} onChange={this.handleLoginUsername}></input>
+            <input value={loginPassword} type="password" onChange={this.handleLoginPassword}></input>
+            <button>Login</button> 
+          </form>
+        </div>
+        <div>
+          <h3>Register</h3>
+          <form onSubmit={this.handleReg}>
+            <input value={regUsername} onChange={this.handleRegUsername}></input>
+            <input value={regPassword} type="password" onChange={this.handleRegPassword}></input>
+            <button>Login</button> 
+          </form>
+        </div>
+      </div>
+      
     )
   }
 }

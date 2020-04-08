@@ -28,12 +28,12 @@ router.post('/', (req, res) => {
       // Create salt and hash
       bcrypt.genSalt(10, (err, salt) => {
         bcrypt.hash(newUser.password, salt, (err, hash) => {
-          if(err) throw err
+          if(err) console.log(err)
           newUser.password = hash
           newUser.save()
             .then(user => {
               jwt.sign({id: user._id}, config.get('jwtSecret'), (err, token) => {
-                if(err) throw err
+                if(err) console.log(err)
                 res.json({
                   token,
                   user: {
