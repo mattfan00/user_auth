@@ -20,12 +20,12 @@ class LoginPage extends Component {
   async handleSubmit(e) {
     e.preventDefault()
 
-    let user = await login(this.state.username, this.state.password)
+    let result = await login(this.state.username, this.state.password)
     this.setState({
       username: '',
       password: ''
     })
-    this.props.login(user)
+    this.props.login(result)
   }
 
   handleUsername(e) {

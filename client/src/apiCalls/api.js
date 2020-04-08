@@ -15,5 +15,5 @@ export async function login(username, password) {
   })
 
   return axios.post('http://localhost:3001/api/auth/', body, config)
-    .then(res => res.data.user)
+    .then(res => res.data)
 }

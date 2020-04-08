@@ -64,12 +64,13 @@ class App extends Component {
       })
   }
 
-  login(user) {
-    localStorage.setItem('token', user.token)
+  login(result) {
+    localStorage.setItem('token', result.token)
+    console.log(result.user)
     this.setState({ 
       isLoggedIn: true,
       loading: false, 
-      currentUser: user
+      currentUser: result.user
     })
   }
 
@@ -109,7 +110,7 @@ class App extends Component {
 }
 
 function PrivateRoute({ component: Component, ...rest }) {
-  console.log(rest)
+  // console.log(rest)
   return (
     <Route {...rest} render={props => (
       rest.isLoggedIn 
