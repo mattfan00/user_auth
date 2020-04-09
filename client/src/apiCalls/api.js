@@ -14,7 +14,7 @@ export async function login(username, password) {
     password
   })
 
-  return axios.post('http://localhost:3001/api/auth/', body, config)
+  return axios.post('http://localhost:3001/api/users/login', body, config)
     .then(res => res.data)
 }
 
@@ -31,6 +31,6 @@ export async function register(username, password) {
     password
   })
 
-  return axios.post('http://localhost:3001/api/users/', body, config)
+  return axios.post('http://localhost:3001/api/users/register', body, config)
     .then(res => res.data)
 }

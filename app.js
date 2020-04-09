@@ -7,7 +7,6 @@ var express = require('express'),
     config = require('config')
 
 var userRoutes = require('./routes/user')
-var authRoutes = require('./routes/auth')
 
 app.use(cors())
 
@@ -24,7 +23,6 @@ mongoose.connect(db, {
 })
 
 app.use('/api/users', userRoutes)
-app.use('/api/auth', authRoutes)
 
 
 

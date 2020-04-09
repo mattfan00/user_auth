@@ -46,7 +46,7 @@ class App extends Component {
       config.headers['x-auth-token'] = currentToken
     }
 
-    axios.get('http://localhost:3001/api/auth/user', config)
+    axios.get('http://localhost:3001/api/users', config)
       .then(res => res.data)
       .then(user => {
         this.setState({

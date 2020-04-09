@@ -4,11 +4,13 @@ var express = require('express'),
     config = require('config'),
     jwt = require('jsonwebtoken')
 
+var auth = require('../middleware/auth')
+
 var User = require('../models/user')
 
 
 // Register new user
-router.post('/', (req, res) => {
+router.post('/register', (req, res) => {
   const { username, password } = req.body
 
   // Simple validation
@@ -47,5 +49,46 @@ router.post('/', (req, res) => {
       })
     })
 })
+
+// Login user
+router.post('/login', (req, res) => {
+  const { username, password } = req.body
+
+  if(!username || !password) {
+    return res.json({message: "Please enter all fields"})
+  }
+
+  User.findOne({username: username})
+    .then(user => {
+      if(!user) return res.json({message: 'User does not exist'})
+
+      // Validate password
+      bcrypt.compare(password, user.password)
+        .then(isMatch => {
+          if(!isMatch) return res.json({message: "Invalid credentials"})
+
+          jwt.sign({id: user._id}, config.get('jwtSecret'), (err, token) => {
+            if(err) throw err
+            res.json({
+              token,
+              user: {
+                id: user._id,
+                username: user.username,
+              }
+            })
+          })
+        })
+    })
+})
+
+// Get current user data
+router.get('/', auth, (req, res) => {
+  User.findById(req.user.id)
+    .select('-password') // Don't return the password
+    .then(user => {
+      res.json(user)
+    })
+})
+
 
 module.exports = router
