@@ -5,6 +5,8 @@ import axios from 'axios'
 import ProtectedPage from './ProtectedPage'
 import LoginPage from './LoginPage'
 
+import { loadUser } from './apiCalls/api'
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -19,7 +21,8 @@ class App extends Component {
     this.state = {
       isLoggedIn: false,
       loading: true,
-      currentUser: null
+      currentUser: null,
+      message: null
     }
 
     this.loadUser = this.loadUser.bind(this)
@@ -31,42 +34,26 @@ class App extends Component {
     this.loadUser()
   }
 
-  loadUser() {
-    var currentToken = localStorage.getItem('token')
+  async loadUser() {
+    let response = await loadUser()
 
-    // headers
-    var config = {
-      headers: {
-        "Content-type": "application/json"
-      }
-    }
-
-    // If token, add to headers
-    if(currentToken) {
-      config.headers['x-auth-token'] = currentToken
-    }
-
-    axios.get('http://localhost:3001/api/users', config)
-      .then(res => res.data)
-      .then(user => {
-        this.setState({
-          isLoggedIn: true,
-          loading: false,
-          currentUser: user
-        })
+    if (response.status) {
+      this.setState({
+        isLoggedIn: false,
+        loading: false,
       })
-      .catch(err => {
-        console.log(err.response.status, err.response.data)
-        this.setState({
-          isLoggedIn: false,
-          loading: false
-        })
+    } else {
+      this.setState({
+        isLoggedIn: true,
+        loading: false,
+        currentUser: response,
+        error: null
       })
+    }
   }
 
   signIn(result) {
     localStorage.setItem('token', result.token)
-    console.log(result.user)
     this.setState({ 
       isLoggedIn: true,
       loading: false, 
@@ -84,15 +71,13 @@ class App extends Component {
   }
 
   render() {
-    const { loading, isLoggedIn, currentUser } = this.state
+    const { loading, isLoggedIn, currentUser, error } = this.state
     return ( 
       <div>
+        {error}
         { !loading ? 
           <Router>
             <Switch>
-              {/* <Route path='/login'>
-                <LoginPage login={this.login} />
-              </Route> */}
               <Route path='/login' render={props => (
                   isLoggedIn
                   ? <Redirect to='/' />

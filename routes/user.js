@@ -10,7 +10,7 @@ var User = require('../models/user')
 
 
 // Register new user
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, password } = req.body
 
   // Simple validation
@@ -18,76 +18,93 @@ router.post('/register', (req, res) => {
     return res.status(400).json({message: "Please enter all fields"})
   }
 
-  User.findOne({username: username})
-    .then(user => {
-      if(user) return res.status(400).json({message: 'User already exists'})
+  try {
+    // Check if username is used alrady
+    let user = await User.findOne({username: username})
+    if(user) throw Error('Username is used already')
 
-      const newUser = User({
-        username,
-        password
-      })
-
-      // Create salt and hash
-      bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(newUser.password, salt, (err, hash) => {
-          if(err) console.log(err)
-          newUser.password = hash
-          newUser.save()
-            .then(user => {
-              jwt.sign({id: user._id}, config.get('jwtSecret'), (err, token) => {
-                if(err) console.log(err)
-                res.json({
-                  token,
-                  user: {
-                    id: user._id,
-                    username: user.username,
-                  }
-                })
-              })
-            })
-        })
-      })
+    // Create new user
+    const newUser = User({
+      username,
+      password
     })
+
+    // Generate salt
+    let salt = await bcrypt.genSalt(10)
+    if(!salt) throw Error('Salt went wrong')
+
+    // Generate hash
+    let hash = await bcrypt.hash(newUser.password, salt)
+    if(!hash) throw Error('Hash went wrong')
+
+    // Set password to generated hash
+    newUser.password = hash
+    let savedUser = await newUser.save()
+    if(!savedUser) throw Error('There is an error with saving the user')
+
+    // Generate token for the user using the user id
+    let token = jwt.sign({id: savedUser._id}, config.get('jwtSecret'))
+    if(!token) throw Error('Something went wrong with generating token')
+
+    res.json({
+      token,
+      user: {
+        id: savedUser._id,
+        username: savedUser.username
+      }
+    })
+
+  } catch(err) {
+    res.status(400).json({message: err.message})
+  }
 })
 
 // Login user
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body
 
+  // Simple validation
   if(!username || !password) {
     return res.json({message: "Please enter all fields"})
   }
 
-  User.findOne({username: username})
-    .then(user => {
-      if(!user) return res.json({message: 'User does not exist'})
+  try { 
+    // Check if username exists 
+    let user = await User.findOne({username: username})
+    if(!user) throw Error('User does not exist')
 
-      // Validate password
-      bcrypt.compare(password, user.password)
-        .then(isMatch => {
-          if(!isMatch) return res.json({message: "Invalid credentials"})
+    // Validate password
+    let isMatch = await bcrypt.compare(password, user.password)
+    if(!isMatch) throw Error('Incorrect password')
 
-          jwt.sign({id: user._id}, config.get('jwtSecret'), (err, token) => {
-            if(err) throw err
-            res.json({
-              token,
-              user: {
-                id: user._id,
-                username: user.username,
-              }
-            })
-          })
-        })
+    // Generate token
+    let token = jwt.sign({id: user._id}, config.get('jwtSecret'))
+    if(!token) throw Error('Something went wrong with generating token')
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+      }
     })
+
+  } catch(err) {
+    res.status(400).json({message: err.message})
+  }
+
 })
 
 // Get current user data
-router.get('/', auth, (req, res) => {
-  User.findById(req.user.id)
-    .select('-password') // Don't return the password
-    .then(user => {
-      res.json(user)
-    })
+router.get('/', auth, async (req, res) => {
+  try {
+    let user = await User.findById(req.user.id).select('-password') // Don't return the password
+    if(!user) throw Error('User does not exist')
+
+    res.json(user)
+  } catch {
+    res.status(400).json({message: err.message})
+  }
 })
 
 
